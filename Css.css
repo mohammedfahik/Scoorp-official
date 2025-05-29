@@ -1,0 +1,301 @@
+
+w<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Scoorp - Live Trading Dashboard</title>
+  <style>
+    /* Root Variables for Easy Theme Switching */
+    :root {
+      --bg-color: #000;
+      --text-color: #fff;
+      --accent: #00ffcc;
+      --button-bg: #222;
+      --button-hover-bg: #00ffcc;
+      --shadow: 0px 4px 20px rgba(0, 255, 204, 0.5);
+      --card-bg: #111;
+      --transition: 0.3s ease;
+      --font-family: 'Arial', sans-serif;
+      --gradient-header: linear-gradient(45deg, #00ffcc, #0085b3);
+    }
+
+    body.light {
+      --bg-color: #fff;
+      --text-color: #333;
+      --button-bg: #fff;
+      --button-hover-bg: #00ffcc;
+      --card-bg: #f9f9f9;
+      --shadow: 0px 4px 20px rgba(0, 255, 204, 0.3);
+      --gradient-header: linear-gradient(45deg, #0085b3, #00ffcc);
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: var(--font-family);
+      margin: 0;
+      padding: 0;
+      transition: background-color var(--transition), color var(--transition);
+    }
+
+    /* Header Styling */
+    header {
+      background: var(--gradient-header);
+      text-align: center;
+      padding: 40px;
+      color: #fff;
+      box-shadow: var(--shadow);
+      transition: background var(--transition);
+    }
+
+    header h1 {
+      font-size: 2.5rem;
+      margin: 0;
+    }
+
+    header p {
+      font-size: 1.2rem;
+      margin-top: 10px;
+    }
+
+    /* Control Buttons (Currency Selector, Theme Toggle) */
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      padding: 20px;
+      background-color: #111;
+      box-shadow: var(--shadow);
+    }
+
+    .controls select,
+    .controls button {
+      padding: 10px;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      transition: background-color var(--transition), transform var(--transition);
+    }
+
+    .controls button:hover,
+    .controls select:hover {
+      background-color: var(--button-hover-bg);
+      cursor: pointer;
+      transform: scale(1.05);
+    }
+
+    /* Market Card Layout */
+    .market {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-around;
+      gap: 20px;
+      padding: 40px;
+      box-sizing: border-box;
+    }
+
+    .coin {
+      background: var(--card-bg);
+      border: 1px solid var(--accent);
+      border-radius: 15px;
+      padding: 30px;
+      width: 260px;
+      text-align: center;
+      box-shadow: var(--shadow);
+      transition: transform var(--transition);
+    }
+
+    .coin:hover {
+      transform: translateY(-10px);
+    }
+
+    .coin h3 {
+      color: var(--accent);
+      margin-bottom: 15px;
+      font-size: 1.6rem;
+    }
+
+    .coin p {
+      font-size: 1.2rem;
+      margin: 10px 0;
+    }
+
+    .change {
+      color: #ccc;
+      font-size: 0.9rem;
+    }
+
+    .forecast {
+      font-weight: bold;
+      color: orange;
+      margin-top: 10px;
+    }
+
+    /* Footer Styling */
+    footer {
+      text-align: center;
+      padding: 15px;
+      background-color: #222;
+      color: #888;
+      position: fixed;
+      width: 100%;
+      bottom: 0;
+      box-shadow: var(--shadow);
+    }
+
+    /* Media Queries for Responsive Design */
+    @media (max-width: 768px) {
+      .controls {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .market {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .coin {
+        width: 90%;
+        margin-bottom: 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Header Section -->
+  <header>
+    <h1>Scoorp</h1>
+    <p>Your Live Crypto & Stock Trading Dashboard</p>
+  </header>
+
+  <!-- Controls Section (Currency Selector & Theme Toggle) -->
+  <div class="controls">
+    <div>
+      <label for="currency">Currency:</label>
+      <select id="currency">
+        <option value="usd" selected>USD</option>
+        <option value="inr">INR</option>
+        <option value="eur">EUR</option>
+      </select>
+    </div>
+    <button onclick="toggleTheme()">Toggle Theme</button>
+  </div>
+
+  <!-- Market Cards (for Coins and Stock Data) -->
+  <div class="market" id="market">
+    <!-- Coin Cards Will Be Populated Here -->
+  </div>
+
+  <!-- Footer Section -->
+  <footer>
+    &copy; 2025 Scoorp Inc. | Powered by AI Forecast Engine
+  </footer>
+
+  <!-- JavaScript for Dynamic Content and Theme Toggle -->
+  <script>
+    const coins = [
+      { id: "bitcoin", name: "Bitcoin" },
+      { id: "ethereum", name: "Ethereum" },
+      { id: "binancecoin", name: "BNB" },
+      { id: "dogecoin", name: "Dogecoin" }
+    ];
+
+    const forecasts = [
+      "+112% (next month)",
+      "Possible dip -15%",
+      "Volatile: range ±10%",
+      "Stable growth +5%",
+      "Surge expected +40%",
+    ];
+
+    // Function to Toggle Dark/Light Theme
+    function toggleTheme() {
+      document.body.classList.toggle("light");
+    }
+
+    // Function to Load Real-Time Prices for Selected Currency
+    async function loadPrices() {
+      const currency = document.getElementById("currency").value;
+      const ids = coins.map(c => c.id).join(",");
+      const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=${currency}&include_24hr_change=true`;
+
+      const res = await fetch(url);
+      const data = await res.json();
+
+      const container = document.getElementById("market");
+      container.innerHTML = "";
+
+      coins.forEach((coin, index) => {
+        const price = data[coin.id][currency];
+        const change = data[coin.id][`${currency}_24h_change`].toFixed(2);
+        const forecast = forecasts[index % forecasts.length];
+
+        const card = document.createElement("div");
+        card.className = "coin";
+        card.innerHTML = `
+          <h3>${coin.name}</h3>
+          <p>${currency.toUpperCase()}: ${price.toLocaleString()}</p>
+          <p class="change">24h: ${change}%</p>
+          <p class="forecast">Forecast: ${forecast}</p>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    document.getElementById("currency").addEventListener("change", loadPrices);
+    window.onload = () => {
+      loadPrices();
+      setInterval(loadPrices, 30000); // refresh every 30 sec
+    };
+  </script>
+
+</body>
+</html>
+/* Add smooth animation when market cards appear */
+.coin {
+  background: var(--card-bg);
+  border: 1px solid var(--accent);
+  border-radius: 15px;
+  padding: 30px;
+  width: 260px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  opacity: 0; /* Initially hidden */
+  transform: translateY(20px); /* Start slightly lower */
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.coin.coin-animation {
+  opacity: 1; /* Fade in */
+  transform: translateY(0); /* Move into position */
+}
+
+.coin:hover {
+  transform: translateY(-10px);
+  cursor: pointer;
+}
+
+.coin h3 {
+  color: var(--accent);
+  margin-bottom: 15px;
+  font-size: 1.6rem;
+}
+
+.coin p {
+  font-size: 1.2rem;
+  margin: 10px 0;
+}
+
+.change {
+  color: #ccc;
+  font-size: 0.9rem;
+}
+
+.forecast {
+  font-weight: bold;
+  color: orange;
+  margin-top: 10px;
+}

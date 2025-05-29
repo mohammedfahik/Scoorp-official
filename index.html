@@ -1,0 +1,180 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Title</title>
+    <meta charset="utf-8">
+  </head>
+  <body>
+    <h1>My HTML Page</h1>
+  </body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Scoorp - Live Trading Dashboard</title>
+  <style>
+    :root {
+      --bg-color: #000;
+      --text-color: #fff;
+      --accent: #00ffcc;
+    }
+
+    body.light {
+      --bg-color: #fff;
+      --text-color: #000;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      text-align: center;
+      padding: 20px;
+      background: var(--accent);
+      color: #000;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 20px;
+      background: #111;
+    }
+
+    .controls select, .controls button {
+      padding: 8px;
+      font-size: 16px;
+    }
+
+    .market {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      padding: 20px;
+    }
+
+    .coin {
+      background: #111;
+      border: 1px solid var(--accent);
+      padding: 20px;
+      border-radius: 10px;
+      width: 220px;
+      text-align: center;
+    }
+
+    .coin h3 {
+      margin: 0;
+      color: var(--accent);
+    }
+
+    .change {
+      font-size: 14px;
+      color: #ccc;
+    }
+
+    .forecast {
+      margin-top: 10px;
+      font-weight: bold;
+      color: orange;
+    }
+
+    footer {
+      text-align: center;
+      padding: 15px;
+      background: #222;
+      color: #888;
+    }
+  </style>
+</head>
+<body class="dark">
+
+  <header>
+    <h1>Scoorp</h1>
+    <p>Live Crypto & Stock Market Overview + Forecast Reports</p>
+  </header>
+
+  <div class="controls">
+    <div>
+      <label for="currency">Currency:</label>
+      <select id="currency">
+        <option value="usd" selected>USD</option>
+        <option value="inr">INR</option>
+        <option value="eur">EUR</option>
+      </select>
+    </div>
+    <button onclick="toggleTheme()">Toggle Theme</button>
+  </div>
+
+  <div class="market" id="market">
+    <!-- Coins will load here -->
+  </div>
+
+  <footer>
+    &copy; 2025 Scoorp Inc. | Powered by AI Forecast Engine
+  </footer>
+
+  <script>
+    const coins = [
+      { id: "bitcoin", name: "Bitcoin" },
+      { id: "ethereum", name: "Ethereum" },
+      { id: "binancecoin", name: "BNB" },
+      { id: "dogecoin", name: "Dogecoin" }
+    ];
+
+    const forecasts = [
+      "+112% (next month)",
+      "Possible dip -15%",
+      "Volatile: range ±10%",
+      "Stable growth +5%",
+      "Surge expected +40%",
+    ];
+
+    function toggleTheme() {
+      document.body.classList.toggle("light");
+    }
+
+    async function loadPrices() {
+      const currency = document.getElementById("currency").value;
+      const ids = coins.map(c => c.id).join(",");
+      const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=${currency}&include_24hr_change=true`;
+
+      const res = await fetch(url);
+      const data = await res.json();
+
+      const container = document.getElementById("market");
+      container.innerHTML = "";
+
+      coins.forEach((coin, index) => {
+        const price = data[coin.id][currency];
+        const change = data[coin.id][`${currency}_24h_change`].toFixed(2);
+        const forecast = forecasts[index % forecasts.length];
+
+        const card = document.createElement("div");
+        card.className = "coin";
+        card.innerHTML = `
+          <h3>${coin.name}</h3>
+          <p>${currency.toUpperCase()}: ${price.toLocaleString()}</p>
+          <p class="change">24h: ${change}%</p>
+          <p class="forecast">Forecast: ${forecast}</p>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    document.getElementById("currency").addEventListener("change", loadPrices);
+    window.onload = () => {
+      loadPrices();
+      setInterval(loadPrices, 30000); // refresh every 30 sec
+    };
+  </script>
+
+</body>
+</html>
